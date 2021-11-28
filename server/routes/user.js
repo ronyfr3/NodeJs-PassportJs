@@ -57,8 +57,22 @@ router.post(
   passport.authenticate("local.login", {
     successRedirect: "/",
     failureRedirect: "/login",
-  })
+  }),(req,res)=>{
+    if(req.body.rememberme) {
+      req.session.cookie.maxAge = 30*24*60*60*10000 //30days
+    }else{
+      req.session.cookie.expires = null;
+    }
+    res.redirect('/')
+  }
 );
+//logout
+router.get("/logout",(req,res)=>{
+  req.logout()
+  req.session.destroy(err=>{
+    res.redirect('/')
+  })
+})
 
 function loginvalidate(req, res, next) {
   //validate fullname is not empty
@@ -159,7 +173,7 @@ router.post("/forgot", (req, res, next) => {
           subject: "Account activation link",
           html: `
           <h1>Please use the following link to activate your account</h1>
-          <p>${process.env.CLIENT_URL}/user/activate/${randomToken}</p>
+          <p>${process.env.CLIENT_URL}/user/reset/${randomToken}</p>
           <hr />
           <p>This email may contain sensetive information</p>
           <p>${process.env.CLIENT_URL}</p>
@@ -178,5 +192,7 @@ router.post("/forgot", (req, res, next) => {
     }
   );
 });
+
+
 
 module.exports = router;
